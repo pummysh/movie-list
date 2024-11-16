@@ -52,7 +52,7 @@ const MovieList = () => {
   };
 
   const handleSearch = (e) => {
-    setSearch(e.target.value.trim());
+    setSearch(e.target.value);
     setError(null);
   };
 
