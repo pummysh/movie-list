@@ -39,7 +39,7 @@ const MovieList = () => {
         await movieService.fetchMovies(search, currentPage);
 
       // Append new movies to the existing list
-      error && setError(null)
+      setError(null)
       setMovies((prevMovies) => [...prevMovies, ...newMovies]);
 
       // Update pagination state
