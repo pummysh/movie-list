@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import movieService from "../services/movieService";
-import "./MovieItem.css"; // Adjust the import path as needed
+import "./MovieItem.css";
 
 const MovieItem = ({ movie }) => {
   const [isOpen, setIsOpen] = useState(false);

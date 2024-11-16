@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import InfiniteScroll from "react-infinite-scroll-component";
 import MovieItem from "./MovieItem";
 import movieService from "../services/movieService";
-import "./MovieList.css"; // Add CSS for the list container
+import "./MovieList.css";
 
 const MovieList = () => {
   const [movies, setMovies] = useState([]);
@@ -13,18 +12,22 @@ const MovieList = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Reset data when the search term changes
     setMovies([]);
     setPage(1);
     setHasMore(true);
 
     if (search.length >= 3) {
-      fetchMovies(1); // Fetch the first page when the search changes
+      fetchMovies(1);
     }
   }, [search]);
 
+  useEffect(() => {
+    if (page === 1) return;
+    fetchMovies(page);
+  }, [page]);
+
   const fetchMovies = async (currentPage) => {
-    setLoading(true);
+    if (!hasMore) return;
 
     if (search.length < 3) {
       setLoading(false);
@@ -36,6 +39,7 @@ const MovieList = () => {
         await movieService.fetchMovies(search, currentPage);
 
       // Append new movies to the existing list
+      error && setError(null)
       setMovies((prevMovies) => [...prevMovies, ...newMovies]);
 
       // Update pagination state
@@ -45,7 +49,7 @@ const MovieList = () => {
       }
     } catch (err) {
       setError("Failed to fetch movies. Please try again.");
-      console.error("Error fetching movie list:", err.message);
+      // console.error("Error fetching movie list:", err.message);
     } finally {
       setLoading(false);
     }
@@ -55,6 +59,35 @@ const MovieList = () => {
     setSearch(e.target.value);
     setError(null);
   };
+
+  const handleScroll = () => {
+    if (
+      document.body.scrollHeight - 300 <
+      window.scrollY + window.innerHeight
+    ) {
+      setLoading(true);
+    }
+  };
+
+  function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(() => {
+        func(...args);
+      }, delay);
+    };
+  }
+
+  window.addEventListener("scroll", debounce(handleScroll, 300));
+
+  useEffect(() => {
+    if (loading == true) {
+      setPage((prevPage) => prevPage + 1);
+    }
+  }, [loading]);
 
   const loadMoreMovies = () => {
     const nextPage = page + 1;
@@ -72,23 +105,11 @@ const MovieList = () => {
       />
       {loading && movies.length === 0 && <p>Loading...</p>}
       {error && <p className="error">{error}</p>}
-      <InfiniteScroll
-        dataLength={movies.length}
-        next={loadMoreMovies}
-        hasMore={hasMore}
-        loader={
-          <p>
-            {search.length === 0
-              ? "Enter at least 3 characters to search for movies"
-              : "Loading more movies..."}
-          </p>
-        }
-        endMessage={<p>No more movies to load.</p>}
-      >
-        {movies.map((movie) => (
-          <MovieItem key={movie.imdbID} movie={movie} />
-        ))}
-      </InfiniteScroll>
+      {movies.map((movie) => (
+        <MovieItem key={movie.imdbID} movie={movie} />
+      ))}
+      {loading && hasMore && <p>Loading more movies...</p>}
+      {!hasMore && <p>No more movies to load.</p>}
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import axios from "axios";
 
 const API_KEY = process.env.REACT_APP_OMDB_API_KEY; // Ensure the API key is stored in your .env file
-console.log(API_KEY,"API_KEYFF")
 const BASE_URL = "https://www.omdbapi.com/";
 
 const movieService = {
